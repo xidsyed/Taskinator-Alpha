@@ -1,6 +1,7 @@
 package com.codinginflow.mvvmtodo.ui.tasks
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -13,6 +14,7 @@ import com.codinginflow.mvvmtodo.R
 import com.codinginflow.mvvmtodo.databinding.FragmentTasksBinding
 import com.codinginflow.mvvmtodo.util.onQueryTextChanged
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.system.measureTimeMillis
 
 
 /**
@@ -48,9 +50,11 @@ class TaskFragment : Fragment(R.layout.fragment_tasks) {
 			setHasFixedSize(true)   // Optimise RV
 		}
 
-		// observe livedata accepts a lambda which gets passed the list by the ViewModel
+		// observe livedata accepts a lambda/observer which gets passed the list by the ViewModel
+		// observer simply calls submitlist on the list given by livedata
 		viewModel.tasksLiveData.observe(viewLifecycleOwner){
 			tasksAdapter.submitList(it)
+
 		}
 		// activate the options menu
 		setHasOptionsMenu(true)
@@ -82,23 +86,23 @@ class TaskFragment : Fragment(R.layout.fragment_tasks) {
 	override fun onOptionsItemSelected(item: MenuItem): Boolean {
 		when (item.itemId) {
 			R.id.action_sort_by_name -> {
-
-
+				viewModel.sortOrderFlow.value = SortOrder.BY_NAME
 				true
 			}
-			R.id.action_sort_by_name -> {
-
-
+			R.id.action_sort_by_date_created -> {
+				viewModel.sortOrderFlow.value = SortOrder.BY_DATE
 				true
 			}
 			R.id.action_delete_all_completed -> {
 
-
 				true
 			}
 			R.id.action_hide_complted_tesks -> {
-				item.isChecked = !item.isChecked
-
+				val isChecked = item.isChecked
+				// update the checkbox
+				item.isChecked = !isChecked
+				// update viewmodel filter
+				viewModel.hideCompletedFlow.value = !isChecked
 
 				true
 			}

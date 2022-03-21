@@ -28,12 +28,13 @@
         android:id="@+id/action_hide_complted_tesks"
         android:icon="@drawable/ic_eye"
         android:checkable="true"
+        android:checked="false"
         android:title="Hide Completed"
         app:showAsAction="never"
         />
     <item
         android:id="@+id/action_delete_all_completed"
-        android:title="Delete All Completed Tasks"
+        android:title="Delete Completed"
         app:showAsAction="never"
     />
 

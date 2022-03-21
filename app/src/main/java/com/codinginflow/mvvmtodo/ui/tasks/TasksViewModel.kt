@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.codinginflow.mvvmtodo.data.TaskDao
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 
 /**
@@ -26,7 +27,15 @@ class TasksViewModel @ViewModelInject constructor(
 ): ViewModel() {
 
 	/**
-	 * `searchQuery` : is a MutableStateFlow object
+	 * ## FLows
+	 * `searchQueryFlow` : represents the search query entered by the user & is a MutableStateFlow
+	 * object
+	 *
+	 * `hideCompletedFlow` : represents the hide completed tasks filter's state as a Boolean Flow
+	 *
+	 * `sortOrderFlow` : represents the sort order filter's state as a SortOrder Enum Flow
+	 *
+	 * ## What is MutableStateFlow
 	 *
 	 *  `MutableStateFLow`:
 	 * Like Mutable LiveData, because It can  hold a single value, not like normal flow
@@ -40,16 +49,24 @@ class TasksViewModel @ViewModelInject constructor(
 	 */
 	val searchQueryFlow = MutableStateFlow("")
 
+	//  MutableStateFlow search query Filters initialised with default args
+	val sortOrderFlow = MutableStateFlow(SortOrder.BY_DATE)
+	val hideCompletedFlow = MutableStateFlow(false)
+
+
 	/**
 	 *
+	 * `tasksFLow` : updated Flow Object that uses `FLOW.flatMapLatest` to stay updated
 	 *
-	 * `tasksFLow` : updated Flow Object that uses `searchQuery.flatMapLatest` to stay updated?
+	 * `combine` : Basically combines multiple flows, and returns a single flow. You get a
+	 * transform lambda function to pass to  dictate how that happens. Here we combine the flows
+	 * using Kotlin's wrapper function (Data Class) `Triple`, used to return multiple values
+	 * from functions
 	 *
-	 * flatMapLatest is a method of searchQuery (which is a MutableStateFlow Object), which
-	 * monitors the searchQuery flow for changes if there is, it executes the `transform` function
-	 * (lambda function we pass to it that uses `getTasks(searchQuery.value)` which returns a new flow
-	 * form the database that matches the new `searchQuery` ) to return a new flow to
-	 * `tasksFlow` Flow Object.
+	 * flatMapLatest is a method of `Flow` , which monitors the it flow for changes if there is,
+	 * it executes the `transform` function (lambda function we pass to it that uses
+	 * `getTasks()` method and passes updated search filters and query which returns a new flow
+	 * from the room databse) to return a new flow to `tasksFlow` Flow Object.
 	 *
 	 * `flatMapLatest` equivalent in `LiveData` is `switchMap`
 	 *
@@ -59,12 +76,24 @@ class TasksViewModel @ViewModelInject constructor(
 	 * (which is the lambda) function passed to it, every time
 	 * the original flow emits a value. When the original flow emits a new value,
 	 * the previous flow produced by transform block is cancelled.* */
-	private val tasksFlow = searchQueryFlow.flatMapLatest {
-		taskDao.getTasks(it)
+	private val tasksFlow = combine(
+		searchQueryFlow,
+		sortOrderFlow,
+		hideCompletedFlow
+	) { query, sortOrder, hideCompleted ->
+		Triple(query, sortOrder, hideCompleted)
+	}.flatMapLatest { (query, sortOrder, hideCompleted) ->  // KOTLIN DESTRUCTURING DECLARATION
+		taskDao.getTasks(query, sortOrder, hideCompleted)
 	}
+
+
+
 
 	/**`tasks` : LiveData object derived from `tasksFlow`*/
 	val tasksLiveData = tasksFlow.asLiveData()
 
 
 }
+
+
+enum class SortOrder {BY_NAME, BY_DATE}

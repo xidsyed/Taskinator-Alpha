@@ -1,5 +1,6 @@
 package com.codinginflow.mvvmtodo.ui.tasks
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -8,6 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmtodo.data.Task
 import com.codinginflow.mvvmtodo.databinding.TaskItemBinding
+import kotlin.system.measureTimeMillis
 
 /**
  * We use ListAdapter, subclass of RecyclerViewAdapter, because we are using an immutable list.
@@ -22,7 +24,7 @@ class TasksAdapter() :
 		// to be called onBindViewHolder
 		fun bindTaskToView(task:Task) {
 			binding.apply {
-				taskNameTextView.setText(task.name)
+				taskNameTextView.text = task.name
 				checkBox.isChecked = task.completed
 				labelPriority.isVisible = task.important
 				taskNameTextView.paint.isStrikeThruText = task.completed
@@ -50,6 +52,8 @@ class TasksAdapter() :
 		  * by LiveData's Observe method's lambda function*/
 
 		holder.bindTaskToView(getItem(position))
+
+
 	}
 
 	/**
