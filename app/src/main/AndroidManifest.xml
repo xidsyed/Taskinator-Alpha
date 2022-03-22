@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.codinginflow.mvvmtodo">
 
+      <!--
+      android:name=".ToDoApplication"
+      Our Custom Subclass of android.app.Application "The Application class, or your subclass
+      of the Application class, is instantiated before any other class when the
+      process for your application/package is created.
+
+
+      -->
     <application
         android:name=".ToDoApplication"
         android:allowBackup="true"

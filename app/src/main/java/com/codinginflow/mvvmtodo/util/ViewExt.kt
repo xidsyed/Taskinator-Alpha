@@ -6,7 +6,7 @@ import androidx.appcompat.widget.SearchView
  * Pass a lambda function to our SearchView Extension function
  * which will be called in our setOnQueryTextListener, onQueryTextChange with the
  * newText Entered as the parameter*/
-inline fun SearchView.onQueryTextChanged(crossinline listener: (String) -> Unit) {
+inline fun SearchView.queryTextChangeListener(crossinline listener: (String) -> Unit) {
 	this.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 		// Don't care, cuz we dont submit.
 		override fun onQueryTextSubmit(query: String?): Boolean {

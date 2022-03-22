@@ -1,7 +1,6 @@
 package com.codinginflow.mvvmtodo.ui.tasks
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -9,12 +8,14 @@ import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.codinginflow.mvvmtodo.R
+import com.codinginflow.mvvmtodo.data.SortOrder
 import com.codinginflow.mvvmtodo.databinding.FragmentTasksBinding
-import com.codinginflow.mvvmtodo.util.onQueryTextChanged
+import com.codinginflow.mvvmtodo.util.queryTextChangeListener
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.launch
 
 
 /**
@@ -61,40 +62,45 @@ class TaskFragment : Fragment(R.layout.fragment_tasks) {
 	}
 	override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 		inflater.inflate(R.menu.menu_fragment_tasks, menu)
+		val hideCompletedItem = menu.findItem(R.id.action_hide_complted_tesks)
 		val searchItem = menu.findItem(R.id.action_search)
 		val searchView = searchItem.actionView as SearchView
 
 
-
 		/**
-		 *  `onQueryTextChanged`: Custom Extension Function that sets onQueryTextListener for the
+		 *  `queryTextChangeListener`: Custom Extension Function that sets onQueryTextListener for the
 		 *  search view
 		 *
 		 *  We update the viewmodel's searchQueryFlow.value inside the trailing lambda to reflect in the
 		 *  viewmodel
 		 */
-		searchView.onQueryTextChanged {
+		searchView.queryTextChangeListener {
 			/**
 			 * every time the searchQueryFlow's value is updated a flatMapLatest updates the
-			 * `tasksFlow` property which updates the livedata consumed by our tasksAdapter in
-			 * `onCreatedView`viewmodel's livedata*/
-
+			 * `tasksFlow` property in ViewModel which updates the livedata consumed by our
+			 * tasksAdapter in `onCreatedView` viewmodel's livedata*/
 			viewModel.searchQueryFlow.value = it
 		}
+
+		// Init HideCompleted isChecked
+		viewLifecycleOwner.lifecycleScope.launch{
+			hideCompletedItem.isChecked = viewModel.getHideCompletedIsChecked()
+		}
+
 	}
 
 	override fun onOptionsItemSelected(item: MenuItem): Boolean {
 		when (item.itemId) {
 			R.id.action_sort_by_name -> {
-				viewModel.sortOrderFlow.value = SortOrder.BY_NAME
+				viewModel.onSortOrderSelected(SortOrder.BY_NAME)
 				true
 			}
 			R.id.action_sort_by_date_created -> {
-				viewModel.sortOrderFlow.value = SortOrder.BY_DATE
+				viewModel.onSortOrderSelected(SortOrder.BY_DATE)
 				true
 			}
 			R.id.action_delete_all_completed -> {
-
+				// TODO: Implement
 				true
 			}
 			R.id.action_hide_complted_tesks -> {
@@ -102,8 +108,7 @@ class TaskFragment : Fragment(R.layout.fragment_tasks) {
 				// update the checkbox
 				item.isChecked = !isChecked
 				// update viewmodel filter
-				viewModel.hideCompletedFlow.value = !isChecked
-
+				viewModel.onHideCompletedSelected(!isChecked)
 				true
 			}
 			else -> super.onOptionsItemSelected(item)
