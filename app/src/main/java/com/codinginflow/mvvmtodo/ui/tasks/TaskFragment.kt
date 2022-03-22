@@ -1,6 +1,7 @@
 package com.codinginflow.mvvmtodo.ui.tasks
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -9,12 +10,18 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmtodo.R
 import com.codinginflow.mvvmtodo.data.SortOrder
+import com.codinginflow.mvvmtodo.data.Task
 import com.codinginflow.mvvmtodo.databinding.FragmentTasksBinding
+import com.codinginflow.mvvmtodo.util.SwipeToDeleteCallback
 import com.codinginflow.mvvmtodo.util.queryTextChangeListener
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 
@@ -29,7 +36,7 @@ import kotlinx.coroutines.launch
  * right point in the lifecycle. The name of the base class will be "Hilt_ ".
  * */
 @AndroidEntryPoint
-class TaskFragment : Fragment(R.layout.fragment_tasks) {
+class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.onClickListener {
 	/**
 	 *  Returns a property delegate to access a viewModel by default Scoped to this Fragment. Which
 	 *  Allows it to be lifecycle aware etc.
@@ -39,33 +46,79 @@ class TaskFragment : Fragment(R.layout.fragment_tasks) {
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		super.onViewCreated(view, savedInstanceState)
 
-		// init binding
 		val binding = FragmentTasksBinding.bind(view)
 
+		val tasksAdapter = TasksAdapter(this)
+		binding.apply {
+			// attach adapter and layout manager to RV
+			tasksRecyclerView.apply {
+				adapter = tasksAdapter
+				layoutManager = LinearLayoutManager(requireContext())
+				setHasFixedSize(true)   // Optimise RV
+			}
+			/**
+			 * `recyclerview.widget.ItemTouchHelper` :
 
-		// attach adapter and layout manager to RV
-		val tasksAdapter = TasksAdapter()
-		binding.tasksRecyclerView.apply {
-			adapter = tasksAdapter
-			layoutManager = LinearLayoutManager(requireContext())
-			setHasFixedSize(true)   // Optimise RV
+			 * utility class to add swipe to dismiss and drag & drop support to RecyclerView.
+			 * It works with a `RecyclerView` and a `Callback` class, which configures what type of
+			 * interactions are enabled and also receives events when user performs these actions.
+			 *
+			 * Override Callbacks depending on functionality you want.
+			 */
+			val swipeHandler = object: SwipeToDeleteCallback(requireContext()){
+				override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+					val task = tasksAdapter.currentList[viewHolder.adapterPosition]
+					viewModel.onItemSwiped(task)
+
+				}
+			}
+			ItemTouchHelper(swipeHandler).attachToRecyclerView(tasksRecyclerView)
 		}
 
-		// observe livedata accepts a lambda/observer which gets passed the list by the ViewModel
-		// observer simply calls submitlist on the list given by livedata
-		viewModel.tasksLiveData.observe(viewLifecycleOwner){
-			tasksAdapter.submitList(it)
-
-		}
 		// activate the options menu
 		setHasOptionsMenu(true)
+
+		 /**
+		  * OBSERVE livedata accepts a lambda/observer which gets passed the list by the ViewModel
+		  * observer simply calls submitlist on the list given by livedata
+		 */
+		viewModel.tasksLiveData.observe(viewLifecycleOwner){
+			tasksAdapter.submitList(it)
+		}
+
+
+		 /**
+		  * OBSERVE taskEventsFlow, this happens inside a coroutine scope,
+		  * since we are collecting a flow
+		  *
+		  * `launchWhenStarted` restricts scope onstart->onstop
+		  *
+		  * we check event type, and create appropriate snackbar. If snackbar action is triggered
+		  * we pass a viewmodel function to handle it.
+		  * */
+		viewLifecycleOwner.lifecycleScope.launchWhenStarted{
+			viewModel.taskEventsFlow.collect { event ->
+				when (event) {
+					is TasksViewModel.TasksEvent.ShowUndoDeleteMessage -> {
+						Snackbar.make(requireView(), "Task Deleted", Snackbar.LENGTH_LONG)
+							.setAction("Undo Delete Item") {
+								viewModel.undoDeleteClick(event.task)
+							}.show()
+					}
+					else -> Log.d("TaskFragment", "onViewCreated: eventrecieved")
+				}
+
+			}
+		}
+
 	}
+
+
 	override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 		inflater.inflate(R.menu.menu_fragment_tasks, menu)
 		val hideCompletedItem = menu.findItem(R.id.action_hide_complted_tesks)
 		val searchItem = menu.findItem(R.id.action_search)
 		val searchView = searchItem.actionView as SearchView
-
 
 		/**
 		 *  `queryTextChangeListener`: Custom Extension Function that sets onQueryTextListener for the
@@ -84,7 +137,7 @@ class TaskFragment : Fragment(R.layout.fragment_tasks) {
 
 		// Init HideCompleted isChecked
 		viewLifecycleOwner.lifecycleScope.launch{
-			hideCompletedItem.isChecked = viewModel.getHideCompletedIsChecked()
+			hideCompletedItem.isChecked = viewModel.getHideCompleted()
 		}
 
 	}
@@ -114,6 +167,17 @@ class TaskFragment : Fragment(R.layout.fragment_tasks) {
 			else -> super.onOptionsItemSelected(item)
 		}
 		return super.onOptionsItemSelected(item)
+	}
+
+
+	// Implement TaskAdapter.onClickListener
+
+	override fun onCheckBoxClick(task: Task, isChecked: Boolean) {
+		viewModel.onCheckBoxClick(task, isChecked)
+	}
+
+	override fun onItemClick(task: Task) {
+		viewModel.onItemClick(task)
 	}
 
 }

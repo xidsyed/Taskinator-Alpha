@@ -13,13 +13,25 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">@color/grey</item>
         <!-- Customize your theme here. -->
-<!--        &lt;!&ndash; Disable Action Bar  &ndash;&gt;-->
-<!--        <item name="windowActionBar">false</item>-->
-<!--        <item name="windowActionBarOverlay">false</item>-->
-<!--        <item name="windowIsFloating">false</item>-->
-<!--        <item name="windowActionModeOverlay">false</item>-->
-<!--        <item name="windowNoTitle">false</item>-->
+        <!-- Snackbar     -->
+        <item name="snackbarStyle">@style/snackbar_style</item>
+        <item name="snackbarTextViewStyle">@id/snackbar_text</item>
+        <item name="snackbarButtonStyle">@style/snackbar_button</item>
     </style>
 
+<!-- Snackbar Styles   -->
+    <style name="snackbar_style" parent="@style/Widget.MaterialComponents.Snackbar">
+        <item name="backgroundTint">@color/grey</item>
+    </style>
+    <style name="snackbar_text" parent="@style/Widget.MaterialComponents.Snackbar.TextView">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+    <style name="snackbar_button" parent="@style/Widget.MaterialComponents.Snackbar.TextView">
+        <item name="backgroundTint">@color/teal_200</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+<!-- Colors   -->
     <color name="grey">#131313</color>
 </resources>

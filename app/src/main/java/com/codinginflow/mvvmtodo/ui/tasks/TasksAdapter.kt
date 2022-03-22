@@ -1,6 +1,5 @@
 package com.codinginflow.mvvmtodo.ui.tasks
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -9,7 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmtodo.data.Task
 import com.codinginflow.mvvmtodo.databinding.TaskItemBinding
-import kotlin.system.measureTimeMillis
+import kotlinx.android.synthetic.main.task_item.view.*
 
 /**
  * We use ListAdapter, subclass of RecyclerViewAdapter, because we are using an immutable list.
@@ -17,11 +16,34 @@ import kotlin.system.measureTimeMillis
  *
  * ListAdapter finds the differences in the background thread, and reorganises the list
  * */
-class TasksAdapter() :
+class TasksAdapter(val listener : onClickListener) :
 	ListAdapter<Task, TasksAdapter.TaskItemViewHolder>(DiffCallback()) {
 
+	// tightly coupled VH
 	inner class TaskItemViewHolder(private val binding: TaskItemBinding) : RecyclerView.ViewHolder(binding.root){
-		// to be called onBindViewHolder
+		// initialiser block for viewholder
+		init {
+			binding.apply {
+				// init item click listener
+				root.setOnClickListener{
+					// make sure view is on screen
+					if(adapterPosition != RecyclerView.NO_POSITION) {
+						val task = getItem(adapterPosition) // get item from adapter
+						listener.onItemClick(task)
+					}
+				}
+				// init checkbox click listener
+				checkBox.setOnClickListener{ view->
+					// make sure view is on screen
+					if(adapterPosition != RecyclerView.NO_POSITION) {
+						val task = getItem(adapterPosition)
+						listener.onCheckBoxClick(task, view.checkBox.isChecked)
+					}
+				}
+			}
+		}
+
+		// bindTaskToView function for onBindViewHolder
 		fun bindTaskToView(task:Task) {
 			binding.apply {
 				taskNameTextView.text = task.name
@@ -84,4 +106,8 @@ class TasksAdapter() :
 	}
 
 
+	interface onClickListener{
+		fun onCheckBoxClick(task:Task, isChecked: Boolean)
+		fun onItemClick(task:Task)
+	}
 }

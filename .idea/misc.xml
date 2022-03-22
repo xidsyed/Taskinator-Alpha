@@ -9,6 +9,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/mmsye/AndroidStudioProjects/MVVMTodo/app/src/main/res/drawable-anydpi/ic_action_name.xml" value="0.374" />
+        <entry key="..\:/Users/mmsye/AndroidStudioProjects/MVVMTodo/app/src/main/res/drawable/ic_delete_white_24.xml" value="0.319" />
         <entry key="..\:/Users/mmsye/AndroidStudioProjects/MVVMTodo/app/src/main/res/drawable/ic_sort.xml" value="0.398" />
         <entry key="..\:/Users/mmsye/AndroidStudioProjects/MVVMTodo/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/Users/mmsye/AndroidStudioProjects/MVVMTodo/app/src/main/res/layout/add_edit_task_fragment.xml" value="0.33" />

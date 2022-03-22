@@ -94,7 +94,7 @@ class PreferencesRepository @Inject constructor(@ApplicationContext context: Con
 			val sortOrder =  SortOrder.valueOf(
 				preferences[PreferencesKeys.SORT_ORDER] ?: SortOrder.BY_DATE.name
 			)
-			val hideCompleted = preferences[PreferencesKeys.HIDE_COMPLETED] ?: false
+			val hideCompleted = preferences[PreferencesKeys.HIDE_COMPLETED] ?: true
 
 			/**
 			 * return `sortOrder` and `hideCompleted` in a dataclass, to `preferencesFlow`\
