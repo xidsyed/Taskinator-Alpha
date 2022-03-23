@@ -3,11 +3,14 @@ package com.codinginflow.mvvmtodo.util
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
+import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmtodo.R
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 
 /**
  * Pass a lambda function to our SearchView Extension function
@@ -109,4 +112,11 @@ abstract class SwipeToDeleteCallback(context: Context) : ItemTouchHelper.SimpleC
 	private fun clearCanvas(c: Canvas?, left: Float, top: Float, right: Float, bottom: Float) {
 		c?.drawRect(left, top, right, bottom, clearPaint)
 	}
+}
+
+
+inline fun getSnackBar(view : View, message: String, length : Int) : Snackbar{
+	val snackbar = Snackbar.make(view, message, length)
+	snackbar.animationMode = BaseTransientBottomBar.ANIMATION_MODE_SLIDE
+	return snackbar
 }

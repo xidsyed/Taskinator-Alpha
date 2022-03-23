@@ -1,15 +1,19 @@
 package com.codinginflow.mvvmtodo.ui.tasks
 
+import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.codinginflow.mvvmtodo.data.PreferencesRepository
-import com.codinginflow.mvvmtodo.data.TaskDao
 import com.codinginflow.mvvmtodo.data.SortOrder
 import com.codinginflow.mvvmtodo.data.Task
+import com.codinginflow.mvvmtodo.data.TaskDao
+import com.codinginflow.mvvmtodo.ui.ADD_TASK_RESULT_OK
+import com.codinginflow.mvvmtodo.ui.EDIT_TASK_RESULT_OK
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -28,7 +32,8 @@ import kotlinx.coroutines.launch
  * */
 class TasksViewModel @ViewModelInject constructor(
 	private val taskDao: TaskDao,
-	private val preferencesRepository: PreferencesRepository
+	private val preferencesRepository: PreferencesRepository,
+	@Assisted state: SavedStateHandle
 ): ViewModel() {
 
 	/**
@@ -49,10 +54,16 @@ class TasksViewModel @ViewModelInject constructor(
 	 * *StateFlow is a state-holder observable flow that emits the current and new state
 	 * updates to its collectors. The current state value can also be read through its value
 	 * property. To update state and send it to the flow, assign a new value to the value
-	 * property of the MutableStateFlow class.*
+	 * property of the MutableStateFlow class.
+	 *
+	 * using livedata with savedstatehandle, no need to set updated value to savedstatehandle
+	 * it updates automatically, as livedata updates
+	 * *
 
 	 */
-	val searchQueryFlow = MutableStateFlow("")
+
+	val searchQueryFlow = state.getLiveData<String>("searchQuery", "")
+
 
 	/**
 	 * Flow<FilterPreferences> from preferencesRepository. Stores preferences
@@ -86,7 +97,7 @@ class TasksViewModel @ViewModelInject constructor(
 	 * the previous flow produced by transform block is cancelled.* */
 
 	private val tasksListFlow = combine(
-		searchQueryFlow,
+		searchQueryFlow.asFlow(),
 		preferencesFlow
 	) { query, preferencesFlow ->
 		Pair(query, preferencesFlow)
@@ -117,10 +128,13 @@ class TasksViewModel @ViewModelInject constructor(
 		}
 	}
 	// Update hideCompleted
-	fun onHideCompletedSelected(hideCompleted: Boolean){
-		viewModelScope.launch {
+	fun onHideCompletedSelected(hideCompleted: Boolean) = viewModelScope.launch {
 			preferencesRepository.updateHideCompleted(hideCompleted)
-		}
+	}
+
+	// Delete All Completed
+	fun onDeleteAllCompletedSelected () = viewModelScope.launch {
+		taskEventsChannel.send(TasksEvent.showDeleteAllCompletedConfitmation)
 	}
 
 	suspend fun getHideCompleted() : Boolean =
@@ -133,7 +147,8 @@ class TasksViewModel @ViewModelInject constructor(
 
 
 	// === Handle RV Adapter Clicks === //
-	fun onItemClick (task: Task) {
+	fun onItemClick (task: Task)  = viewModelScope.launch{
+		taskEventsChannel.send(TasksEvent.navigateToEditTask(task))
 	}
 
 	fun onCheckBoxClick(task: Task, isChecked: Boolean) =
@@ -153,12 +168,36 @@ class TasksViewModel @ViewModelInject constructor(
 		taskDao.insert(task)
 	}
 
+	// === Handle FAB Method === //
+	fun onAddNewTaskClick() = viewModelScope.launch{
+		taskEventsChannel.send(TasksEvent.navigateToAddTask)
+	}
+
+	fun addEditResult (result : Int) {
+		when (result) {
+			ADD_TASK_RESULT_OK -> {
+				showTaskSavedConfirmationMessage("Task Added")
+			}
+			EDIT_TASK_RESULT_OK -> {
+				showTaskSavedConfirmationMessage("Task Updated")
+			}
+		}
+	}
+
+
+	private fun showTaskSavedConfirmationMessage(message: String) = viewModelScope.launch {
+		taskEventsChannel.send(TasksEvent.ShowTaskSavedConfirmationMessage(message))
+	}
 	/** The reason we use a sealed class, is because its more robust, when we use it in a when
 	 * statement, we get a warning if the list is not exhaustive
 	 *
 	 * `TaskEvent` class holds all the events related to the task fragment*/
 	sealed class TasksEvent {
+		object navigateToAddTask : TasksEvent()
+		data class navigateToEditTask (val task: Task) : TasksEvent()
 		data class ShowUndoDeleteMessage(val task: Task) : TasksEvent()
+		data class ShowTaskSavedConfirmationMessage(val message: String) : TasksEvent()
+		object showDeleteAllCompletedConfitmation : TasksEvent()
 	}
 
 }

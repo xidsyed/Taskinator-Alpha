@@ -1,15 +1,16 @@
 package com.codinginflow.mvvmtodo.ui.tasks
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +19,8 @@ import com.codinginflow.mvvmtodo.data.SortOrder
 import com.codinginflow.mvvmtodo.data.Task
 import com.codinginflow.mvvmtodo.databinding.FragmentTasksBinding
 import com.codinginflow.mvvmtodo.util.SwipeToDeleteCallback
+import com.codinginflow.mvvmtodo.util.exhaustive
+import com.codinginflow.mvvmtodo.util.getSnackBar
 import com.codinginflow.mvvmtodo.util.queryTextChangeListener
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,8 +53,7 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.onClickList
 
 		val tasksAdapter = TasksAdapter(this)
 		binding.apply {
-			// attach adapter and layout manager to RV
-			tasksRecyclerView.apply {
+ 			tasksRecyclerView.apply {
 				adapter = tasksAdapter
 				layoutManager = LinearLayoutManager(requireContext())
 				setHasFixedSize(true)   // Optimise RV
@@ -73,10 +75,21 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.onClickList
 				}
 			}
 			ItemTouchHelper(swipeHandler).attachToRecyclerView(tasksRecyclerView)
+
+			// FAB
+			fabAddTask.setOnClickListener {
+				viewModel.onAddNewTaskClick()
+			}
 		}
+
 
 		// activate the options menu
 		setHasOptionsMenu(true)
+
+		setFragmentResultListener("add_edit_request") { _, bundle ->
+			val result = bundle.getInt("add_edit_result")
+			viewModel.addEditResult(result)
+		}
 
 		 /**
 		  * OBSERVE livedata accepts a lambda/observer which gets passed the list by the ViewModel
@@ -100,13 +113,36 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.onClickList
 			viewModel.taskEventsFlow.collect { event ->
 				when (event) {
 					is TasksViewModel.TasksEvent.ShowUndoDeleteMessage -> {
-						Snackbar.make(requireView(), "Task Deleted", Snackbar.LENGTH_LONG)
-							.setAction("Undo Delete Item") {
+						getSnackBar(requireView(), "Task Deleted", Snackbar.LENGTH_LONG)
+							.setAction("Undo") {
 								viewModel.undoDeleteClick(event.task)
 							}.show()
 					}
-					else -> Log.d("TaskFragment", "onViewCreated: eventrecieved")
-				}
+					is TasksViewModel.TasksEvent.navigateToAddTask -> {
+						// safeArgs give compile time safety
+						val action = TaskFragmentDirections
+							.actionTaskFragmentToAddEditTaskFragment(null, "New Task")
+						findNavController().navigate(action)
+
+					}
+					is TasksViewModel.TasksEvent.navigateToEditTask -> {
+						val action = TaskFragmentDirections
+							.actionTaskFragmentToAddEditTaskFragment(event.task, "Edit Task")
+						findNavController().navigate(action)
+					}
+					is TasksViewModel.TasksEvent.ShowTaskSavedConfirmationMessage -> {
+						getSnackBar(requireView(), event.message, Snackbar.LENGTH_LONG).show()
+					}
+					TasksViewModel.TasksEvent.showDeleteAllCompletedConfitmation -> {
+						val action = TaskFragmentDirections.actionGlobalDialogFragment(
+							"Confirm Deletion",
+							"Sure you want to delete all completed tasks?",
+							"Cancel",
+							"Yes"
+						)
+						findNavController().navigate(action)
+					}
+				}.exhaustive
 
 			}
 		}
@@ -153,7 +189,7 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.onClickList
 				true
 			}
 			R.id.action_delete_all_completed -> {
-				// TODO: Implement
+				viewModel.onDeleteAllCompletedSelected()
 				true
 			}
 			R.id.action_hide_complted_tesks -> {

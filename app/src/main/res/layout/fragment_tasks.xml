@@ -5,6 +5,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.codinginflow.mvvmtodo.ui.tasks.TaskFragment"
     >
+    <!--
+    tools:context="com.codinginflow.mvvmtodo.ui.tasks.TaskFragment"
+    tells android navgraph, where to find the ui for the fragment class
+    -->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tasks_recycler_view"
@@ -12,10 +16,11 @@
         android:layout_height="match_parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_task"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_margin="24dp"
         android:src="@drawable/ic_add"
         tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck"
         android:contentDescription="TODO" />

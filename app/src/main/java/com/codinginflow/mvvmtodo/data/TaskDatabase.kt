@@ -5,7 +5,6 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.codinginflow.mvvmtodo.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
@@ -45,36 +44,34 @@ abstract class TaskDatabase : RoomDatabase() {
 			//GlobalScope.launch{}	//NOPE Bad Practice - memory leak
 
 			applicationScope.launch {
+				dao.insert(Task("Wish X Æ A-Xii A Happy Birthday"))
+				dao.insert(Task("Learn Fragment Lifecycles", important = false))
+				dao.insert(Task("Complete Google Foobar", completed = true))
+				dao.insert(Task("Find Out why ListAdapter Causes Stutter", completed = true))
+				dao.insert(Task("Deploy Blog"))
+				dao.insert(Task("Go through Stack Source"))
+				dao.insert(Task("Close Github Issue", important = false))
+				dao.insert(Task("Check Leetcode", completed = true))
+				dao.insert(Task("Finish Basic Todo App", completed = true))
+				dao.insert(Task("Find Out if Stuttering on other phones"))
 				dao.insert(Task("Build Widget Prototype for HN App"))
-				dao.insert(Task("GSOC Weekly Task Complete", important = true))
 				dao.insert(Task("Revise Leetcode Questions", completed = true))
-				dao.insert(Task("App Previews for PlayStore", completed = true))
-				dao.insert(Task("Deploy Update to Personal Blog"))
-				dao.insert(Task("Build Widget Prototype for HN App"))
-				dao.insert(Task("GSOC Weekly Task Complete", important = true))
-				dao.insert(Task("Revise Leetcode Questions", completed = true))
-				dao.insert(Task("App Previews for PlayStore", completed = true))
-				dao.insert(Task("Deploy Update to Personal Blog"))
-				dao.insert(Task("Build Widget Prototype for HN App"))
-				dao.insert(Task("GSOC Weekly Task Complete", important = true))
-				dao.insert(Task("Revise Leetcode Questions", completed = true))
-				dao.insert(Task("App Previews for PlayStore", completed = true))
-				dao.insert(Task("Deploy Update to Personal Blog"))
-				dao.insert(Task("Build Widget Prototype for HN App"))
-				dao.insert(Task("GSOC Weekly Task Complete", important = true))
-				dao.insert(Task("Revise Leetcode Questions", completed = true))
-				dao.insert(Task("App Previews for PlayStore", completed = true))
-				dao.insert(Task("Deploy Update to Personal Blog"))
-				dao.insert(Task("Build Widget Prototype for HN App"))
-				dao.insert(Task("GSOC Weekly Task Complete", important = true))
-				dao.insert(Task("Revise Leetcode Questions", completed = true))
-				dao.insert(Task("App Previews for PlayStore", completed = true))
-				dao.insert(Task("Deploy Update to Personal Blog"))
-				dao.insert(Task("Build Widget Prototype for HN App"))
-				dao.insert(Task("GSOC Weekly Task Complete", important = true))
-				dao.insert(Task("Revise Leetcode Questions", completed = true))
-				dao.insert(Task("App Previews for PlayStore", completed = true))
-				dao.insert(Task("Deploy Update to Personal Blog"))
+				dao.insert(Task("What is Systrace"))
+				dao.insert(Task("Where do the threads go?"))
+				dao.insert(Task("What does the fox say", important = false))
+				dao.insert(Task("Answer to the Universe?", completed = true))
+				dao.insert(Task("More Dummy Tasks", completed = true))
+				dao.insert(Task("Way too much time"))
+				dao.insert(Task("Navigation Component is Awesome"))
+				dao.insert(Task("Design View Can be Buggy", important = false))
+				dao.insert(Task("This App has been optimised for dark mode", completed = false, important = true))
+				dao.insert(Task("These are dummy tasks", completed = true))
+				dao.insert(Task("Swipe Left to Delete Task", completed = false, important = true))
+				dao.insert(Task("Mark Any Task as Important", completed = false, important = true))
+				dao.insert(Task("You can Apply Filters from the Options Menu", completed = false, important = true))
+				dao.insert(Task("Or you could delete all tasks", completed = false, important = true))
+				dao.insert(Task("You could even search for new tasks", completed = false, important = true))
+				dao.insert(Task("Do big animations in list stutter for you?", completed = false, important = true))
 			}
 		}
 	}

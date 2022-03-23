@@ -8,6 +8,11 @@
       of the Application class, is instantiated before any other class when the
       process for your application/package is created.
 
+      in tasks_fragment.xml
+
+      tools:context="com.codinginflow.mvvmtodo.ui.tasks.TaskFragment"
+      tells android navgraph, where to find the ui for the fragment class
+
 
       -->
     <application
@@ -18,7 +23,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MVVMTodo">
-        <activity android:name="com.codinginflow.mvvmtodo.ui.MainActivity">
+        <activity android:name="com.codinginflow.mvvmtodo.ui.MainActivity"
+            android:windowSoftInputMode="adjustResize">
+            <!--Resizes the view when keyboard opens.-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

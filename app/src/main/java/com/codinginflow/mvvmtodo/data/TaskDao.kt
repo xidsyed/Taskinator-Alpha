@@ -1,9 +1,7 @@
 package com.codinginflow.mvvmtodo.data
 
 import androidx.room.*
-
 import kotlinx.coroutines.flow.Flow
-import com.codinginflow.mvvmtodo.data.SortOrder
 
 /**
  * Data Access Objects are the main classes where you define your database interactions.
@@ -56,5 +54,8 @@ interface TaskDao {
 
 	@Delete
 	suspend fun delete (task: Task)
+
+	@Query("DELETE FROM task_table WHERE completed = 1")
+	suspend fun deleteCompletedTasks()
 
 }

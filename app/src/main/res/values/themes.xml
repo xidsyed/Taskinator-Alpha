@@ -20,5 +20,4 @@ l        <item name="colorPrimary">@color/purple_500</item>
 <!--        <item name="windowNoTitle">false</item>-->
     </style>
 
-    <color name="grey">#131313</color>
 </resources>

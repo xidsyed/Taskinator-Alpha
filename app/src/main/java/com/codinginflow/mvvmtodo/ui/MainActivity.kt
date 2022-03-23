@@ -1,11 +1,8 @@
 package com.codinginflow.mvvmtodo.ui
 
-import androidx.appcompat.app.AppCompatActivity
+import android.app.Activity
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import androidx.appcompat.widget.SearchView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -14,7 +11,6 @@ import com.codinginflow.mvvmtodo.R
 import com.codinginflow.mvvmtodo.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.zip.Inflater
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -42,3 +38,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+
+const val ADD_TASK_RESULT_OK = Activity.RESULT_FIRST_USER
+const val EDIT_TASK_RESULT_OK = Activity.RESULT_FIRST_USER+1
