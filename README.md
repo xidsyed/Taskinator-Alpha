@@ -8,8 +8,7 @@ Taskinator is an essentials tasks app, that allows you to seemlessly
 
 Tasks ✅ in a lightweight and fluid android app. 
 
-https://user-images.githubusercontent.com/26184016/190646335-823ca677-b62b-42d6-b0b9-33cd0aaffa45.mp4
-
+![ezgif com-video-to-gif-converter](https://github.com/xidsyed/Taskinator-Alpha/assets/26184016/965ecf6d-aa68-4e98-8ba8-df449e1a8328)
 
 
 It uses the following Latest Android Technologies under the hood.
